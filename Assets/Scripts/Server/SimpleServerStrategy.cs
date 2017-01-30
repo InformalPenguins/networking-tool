@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Net;
 
-public class BroadcastServerStrategy : IServerStrategy
+public class SimpleServerStrategy : IServerStrategy
 {
     UDPServer udpServer;
-	public BroadcastServerStrategy()
-	{
-	}
+    private int currentPlayer = 0;
+
+    public SimpleServerStrategy()
+    {
+    }
+
     public void setUdpServer(UDPServer udpServer) {
         this.udpServer = udpServer;
     }
 
     public void processText(string text, IPEndPoint senderIpEndPoint)
     {
+        int senderPort = senderIpEndPoint.Port;
+        string senderIp = senderIpEndPoint.Address.ToString();
+        string playerKey = senderIp + ":" + senderPort;
+
         if (text.StartsWith(NetworkConstants.ACTION_BROADCAST))
         {
             udpServer.broadCast(text);
@@ -27,10 +34,9 @@ public class BroadcastServerStrategy : IServerStrategy
         }
         else
         {
-            udpServer.print(playerKey + " - UNKNOWN MESSAGE :: " + text);
+            Console.WriteLine(playerKey + " - UNKNOWN MESSAGE :: " + text);
         }
     }
-    private int currentPlayer = 0;
     private string getNextPlayerMessage()
     {
         //TODO: Rework this assign of player

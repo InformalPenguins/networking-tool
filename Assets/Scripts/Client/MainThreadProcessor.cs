@@ -10,9 +10,21 @@ using System;
  * */
 public class MainThreadProcessor : MonoBehaviour
 {
-    private static readonly Queue<Action> _executionQueue = new Queue<Action>();
+    //This is the entity that must handle UI changes (if any) from the received message.
+    private INetworkHandler clientStrategy;
 
+    public ClientProcessorStrategy selectedStrategy;
+
+    //Editable section
+    public enum ClientProcessorStrategy
+    {
+        //TODO: Add your text handlers identifiers here.
+        DEMO,
+    }
+
+    private static readonly Queue<Action> _executionQueue = new Queue<Action>();
     private static MainThreadProcessor _instance = null;
+
     public static MainThreadProcessor Instance()
     {
         if (!Exists())
@@ -32,6 +44,16 @@ public class MainThreadProcessor : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
+            //Editable section
+            switch (selectedStrategy) {
+                case ClientProcessorStrategy.DEMO:
+                    clientStrategy = new DemoStrategy ();
+                    break;
+//                case ClientProcessorStrategy.MyMoba:
+//                    selectedStrategy = new MyMobaUpdater ();
+//                    break;
+                //TODO: Add your text handlers here.
+            }
             //inputManager = GetComponent<InputManager>();
             DontDestroyOnLoad(this.gameObject);
         }
@@ -58,36 +80,9 @@ public class MainThreadProcessor : MonoBehaviour
 
     public IEnumerator processMessage(string text)
     {
-        //TODO: Delegate to a GameLogic entity
-        if (text.StartsWith(NetworkConstants.ACTION_UPDATE_POSITION + " "))
-        {
-            text = text.Substring(NetworkConstants.ACTION_UPDATE_POSITION.ToString().Length + 1);
-            this.LoadPositions(text);
+        if (clientStrategy != null) {
+            clientStrategy.processMessage (text);
         }
-        else if (text.StartsWith(NetworkConstants.INPUT_POSITION))
-        {
-            text = text.Substring(NetworkConstants.INPUT_POSITION.Length);
-            this.MoveToLocation(text);
-        }
-        else if (text.StartsWith(NetworkConstants.ACTION_SERVER_LOGIN))
-        {
-            text = text.Substring(NetworkConstants.ACTION_SERVER_LOGIN.ToString().Length);
-            this.IdentifyUser(text);
-        }
-
         yield return null;
-    }
-
-    private void MoveToLocation(string text)
-    {
-        throw new NotImplementedException();
-    }
-    private void LoadPositions(string text)
-    {
-        throw new NotImplementedException();
-    }
-    private void IdentifyUser(string text)
-    {
-        throw new NotImplementedException();
     }
 }

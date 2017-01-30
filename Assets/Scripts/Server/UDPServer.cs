@@ -9,20 +9,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class BroadCastServer : MonoBehaviour
+public class UDPServer : MonoBehaviour
 {
     Thread receiveThread;
-    UdpClient broadCastServer;
+    UdpClient udpServer;
+
+    public enum ServerStrategies
+    {
+        SIMPLE,
+        BROADCAST,
+        SPECTATOR
+    }
+    public ServerStrategies selectedStrategy;
+    private IServerStrategy serverStrategy;
 
     public int port = 9000;
     public bool startListening = false;
-    private String lastMessage = "";
+//    private String lastMessage = "";
 
     private Dictionary<string, IPEndPoint> clientsList = new Dictionary<string, IPEndPoint>();
 
     private static void Main()
     {
-        BroadCastServer receiveObj = new BroadCastServer();
+        UDPServer receiveObj = new UDPServer();
         receiveObj.init();
 
         string text = "";
@@ -35,6 +44,17 @@ public class BroadCastServer : MonoBehaviour
     // start from unity3d
     public void Start()
     {
+        switch (selectedStrategy) {
+            case ServerStrategies.SIMPLE:
+                serverStrategy = new SimpleServerStrategy ();
+                break;
+            case ServerStrategies.BROADCAST:
+                serverStrategy = new BroadcastServerStrategy ();
+                break;
+            default:
+                throw new NotImplementedException (selectedStrategy + " has not been implemented");
+        }
+        serverStrategy.setUdpServer (this);
         if (startListening)
         {
             init();
@@ -43,16 +63,15 @@ public class BroadCastServer : MonoBehaviour
     public void init()
     {
         print("Listening " + port);
-        receiveThread = new Thread(
-            new ThreadStart(ReceiveData));
+        receiveThread = new Thread(new ThreadStart(ReceiveData));
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
     private void ReceiveData()
     {
         //Server loop
-        broadCastServer = new UdpClient(port);
-        broadCastServer.EnableBroadcast = true;
+        udpServer = new UdpClient(port);
+        udpServer.EnableBroadcast = true;
         while (true)
         {
             try
@@ -60,26 +79,20 @@ public class BroadCastServer : MonoBehaviour
                 // Client msg arrived.
                 IPEndPoint senderIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-                byte[] data = broadCastServer.Receive(ref senderIpEndPoint);
+                byte[] data = udpServer.Receive(ref senderIpEndPoint);
 
                 int senderPort = senderIpEndPoint.Port;
                 string senderIp = senderIpEndPoint.Address.ToString();
                 string playerKey = senderIp + ":" + senderPort;
-
 
                 if (!clientsList.ContainsKey(playerKey))
                 {
                     clientsList.Add(playerKey, senderIpEndPoint);
                 }
 
-                //TODO: Move to ClientHandler logic
                 // Converting data to string
                 string text = Encoding.UTF8.GetString(data);
-                broadCast(text);
-                //End Client Handler
-
-                // latest UDPpacket
-                lastMessage = text;
+                serverStrategy.processText(text, senderIpEndPoint);
             }
             catch (Exception err)
             {
@@ -87,9 +100,10 @@ public class BroadCastServer : MonoBehaviour
             }
         }
     }
-    private void broadCast(string msg, IPEndPoint ipEndPoint)
+
+    public void broadCast(string msg, IPEndPoint ipEndPoint)
     {
-        IPEndPoint[] players = BroadCastServer.toArray(this.clientsList);
+        IPEndPoint[] players = UDPServer.toArray(this.clientsList);
         foreach (IPEndPoint player in players)
         {
             if (player != null && !player.Equals(ipEndPoint))
@@ -99,24 +113,17 @@ public class BroadCastServer : MonoBehaviour
         }
     }
 
-    private void broadCast(string msg)
+    public void broadCast(string msg)
     {
         this.broadCast(msg, null);
     }
 
-    private void sendMessage(string msg, IPEndPoint ipEndPoint)
+    public void sendMessage(string msg, IPEndPoint ipEndPoint)
     {
         byte[] msgBytes = Encoding.UTF8.GetBytes(msg);
-        broadCastServer.Send(msgBytes, msgBytes.Length, ipEndPoint);
+        udpServer.Send(msgBytes, msgBytes.Length, ipEndPoint);
     }
 
-    private int currentPlayer = 0;
-    private string getNextPlayerMessage()
-    {
-        //TODO: Rework this assign of player
-        String nextPlayerMessage = NetworkConstants.ACTION_SERVER_LOGIN + " " + currentPlayer++;
-        return nextPlayerMessage;
-    }
 
     private static IPEndPoint[] toArray(Dictionary<string, IPEndPoint> dictionary)
     {

@@ -51,3 +51,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 399593ca6d30dfc4895368e7b63bed7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedStrategy: 1
+  port: 9000
+  startListening: 1
