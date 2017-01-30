@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class UDPServer : MonoBehaviour
+public class BroadCastServer : MonoBehaviour
 {
     Thread receiveThread;
-    UdpClient udpServer;
-    public IServerStrategy serverStrategy;
+    UdpClient broadCastServer;
+
     public int port = 9000;
     public bool startListening = false;
     private String lastMessage = "";
@@ -22,7 +22,7 @@ public class UDPServer : MonoBehaviour
 
     private static void Main()
     {
-        UDPServer receiveObj = new UDPServer();
+        BroadCastServer receiveObj = new BroadCastServer();
         receiveObj.init();
 
         string text = "";
@@ -43,15 +43,16 @@ public class UDPServer : MonoBehaviour
     public void init()
     {
         print("Listening " + port);
-        receiveThread = new Thread(new ThreadStart(ReceiveData));
+        receiveThread = new Thread(
+            new ThreadStart(ReceiveData));
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
     private void ReceiveData()
     {
         //Server loop
-        udpServer = new UdpClient(port);
-        udpServer.EnableBroadcast = true;
+        broadCastServer = new UdpClient(port);
+        broadCastServer.EnableBroadcast = true;
         while (true)
         {
             try
@@ -59,7 +60,7 @@ public class UDPServer : MonoBehaviour
                 // Client msg arrived.
                 IPEndPoint senderIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-                byte[] data = udpServer.Receive(ref senderIpEndPoint);
+                byte[] data = broadCastServer.Receive(ref senderIpEndPoint);
 
                 int senderPort = senderIpEndPoint.Port;
                 string senderIp = senderIpEndPoint.Address.ToString();
@@ -74,7 +75,7 @@ public class UDPServer : MonoBehaviour
                 //TODO: Move to ClientHandler logic
                 // Converting data to string
                 string text = Encoding.UTF8.GetString(data);
-                serverStrategy.processText(text, senderIpEndPoint);
+                broadCast(text);
                 //End Client Handler
 
                 // latest UDPpacket
@@ -86,10 +87,9 @@ public class UDPServer : MonoBehaviour
             }
         }
     }
-
-    public void broadCast(string msg, IPEndPoint ipEndPoint)
+    private void broadCast(string msg, IPEndPoint ipEndPoint)
     {
-        IPEndPoint[] players = UDPServer.toArray(this.clientsList);
+        IPEndPoint[] players = BroadCastServer.toArray(this.clientsList);
         foreach (IPEndPoint player in players)
         {
             if (player != null && !player.Equals(ipEndPoint))
@@ -99,17 +99,24 @@ public class UDPServer : MonoBehaviour
         }
     }
 
-    public void broadCast(string msg)
+    private void broadCast(string msg)
     {
         this.broadCast(msg, null);
     }
 
-    public void sendMessage(string msg, IPEndPoint ipEndPoint)
+    private void sendMessage(string msg, IPEndPoint ipEndPoint)
     {
         byte[] msgBytes = Encoding.UTF8.GetBytes(msg);
-        udpServer.Send(msgBytes, msgBytes.Length, ipEndPoint);
+        broadCastServer.Send(msgBytes, msgBytes.Length, ipEndPoint);
     }
 
+    private int currentPlayer = 0;
+    private string getNextPlayerMessage()
+    {
+        //TODO: Rework this assign of player
+        String nextPlayerMessage = NetworkConstants.ACTION_SERVER_LOGIN + " " + currentPlayer++;
+        return nextPlayerMessage;
+    }
 
     private static IPEndPoint[] toArray(Dictionary<string, IPEndPoint> dictionary)
     {
