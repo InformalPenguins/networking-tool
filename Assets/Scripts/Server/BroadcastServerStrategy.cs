@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Net;
+using UnityEngine;
 
 public class BroadcastServerStrategy : IServerStrategy
 {
-    UDPServer udpServer;
     public BroadcastServerStrategy()
     {
     }
-    public void setUdpServer(UDPServer udpServer) {
-        this.udpServer = udpServer;
+    public void Start()
+    {
+        Debug.Log("Starting BroadcastServerStrategy");
     }
-
-    public void processText(string text, IPEndPoint senderIpEndPoint)
+    public override void processText(string text, IPEndPoint ipEndPoint)
     {
         if (text == null || text.Length == 0)
         {
             return;
         }
         udpServer.broadCast(text);
+    }
+
+    public override void setUdpServer(UDPServer udpServer)
+    {
+        this.udpServer = udpServer;
     }
 }

@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 114820304298728018}
   - component: {fileID: 114238560162619960}
   - component: {fileID: 114697770674110450}
+  - component: {fileID: 114168195093454090}
   m_Layer: 0
   m_Name: Client
   m_TagString: Untagged
@@ -42,6 +43,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114168195093454090
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1010106404758990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50de3c4deb32b4a58a89d6b19f63221c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114238560162619960
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -64,7 +76,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0f4a2987486346479178d0bca9fc320, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedStrategy: 0
 --- !u!114 &114820304298728018
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -78,3 +89,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverIP: 127.0.0.1
   serverPort: 9000
+  clientListeningPort: 9001

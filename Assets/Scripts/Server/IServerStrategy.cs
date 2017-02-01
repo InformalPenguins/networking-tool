@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net;
+using UnityEngine;
 
-public interface IServerStrategy
+public abstract class IServerStrategy : MonoBehaviour
 {
-    void processText(string text, IPEndPoint ipEndPoint);
-    void setUdpServer(UDPServer server);
+    protected UDPServer udpServer;
+    public abstract void processText(string text, IPEndPoint ipEndPoint);
+    public abstract void setUdpServer(UDPServer server);
 }

@@ -11,16 +11,7 @@ using System;
 public class MainThreadProcessor : MonoBehaviour
 {
     //This is the entity that must handle UI changes (if any) from the received message.
-    private INetworkHandler clientStrategy;
-
-    public ClientProcessorStrategy selectedStrategy;
-
-    //Editable section
-    public enum ClientProcessorStrategy
-    {
-        //TODO: Add your text handlers identifiers here.
-        DEMO,
-    }
+    private IUIHandler clientStrategy;
 
     private static readonly Queue<Action> _executionQueue = new Queue<Action>();
     private static MainThreadProcessor _instance = null;
@@ -44,16 +35,7 @@ public class MainThreadProcessor : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            //Editable section
-            switch (selectedStrategy) {
-                case ClientProcessorStrategy.DEMO:
-                    clientStrategy = new DemoStrategy ();
-                    break;
-//                case ClientProcessorStrategy.MyMoba:
-//                    selectedStrategy = new MyMobaUpdater ();
-//                    break;
-                //TODO: Add your text handlers here.
-            }
+            clientStrategy = GetComponent<IUIHandler>();
             //inputManager = GetComponent<InputManager>();
             DontDestroyOnLoad(this.gameObject);
         }

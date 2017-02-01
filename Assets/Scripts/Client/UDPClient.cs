@@ -9,11 +9,10 @@ using System.Threading;
 
 public class UDPClient : MonoBehaviour
 {
-    private static int localPort;
-
     //TODO: Feed server from config file to allow dynamic server|port
     public string serverIP = "127.0.0.1";
     public int serverPort = 9000;
+    public int clientListeningPort = 9001;
 
     IPEndPoint remoteEndPoint;
     UdpClient server;
@@ -30,7 +29,7 @@ public class UDPClient : MonoBehaviour
     public void init()
     {
         remoteEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
-        server = new UdpClient();
+        server = new UdpClient(clientListeningPort);
         server.EnableBroadcast = true;
 
         print("Sending to " + serverIP + " : " + serverPort);
@@ -39,7 +38,7 @@ public class UDPClient : MonoBehaviour
         receiveThread.IsBackground = true;
         receiveThread.Start();
 
-        sendString(NetworkConstants.ACTION_SERVER_LOGIN);
+        //sendString(NetworkConstants.ACTION_SERVER_LOGIN);
     }
     int countErrors = 0;
 
@@ -110,6 +109,7 @@ public class UDPClient : MonoBehaviour
         try
         {
             server.Close();
+            receiveThread.Abort();
         }
         catch (Exception e)
         {

@@ -14,13 +14,6 @@ public class UDPServer : MonoBehaviour
     Thread receiveThread;
     UdpClient udpServer;
 
-    public enum ServerStrategies
-    {
-        SIMPLE,
-        BROADCAST,
-        SPECTATOR
-    }
-    public ServerStrategies selectedStrategy;
     private IServerStrategy serverStrategy;
 
     public int port = 9000;
@@ -29,32 +22,22 @@ public class UDPServer : MonoBehaviour
 
     private Dictionary<string, IPEndPoint> clientsList = new Dictionary<string, IPEndPoint>();
 
-    private static void Main()
-    {
-        UDPServer receiveObj = new UDPServer();
-        receiveObj.init();
+    //private static void Main()
+    //{
+    //    UDPServer receiveObj = new UDPServer();
+    //    receiveObj.init();
 
-        string text = "";
-        do
-        {
-            text = Console.ReadLine();
-        }
-        while (!text.Equals("exit"));
-    }
+    //    string text = "";
+    //    do
+    //    {
+    //        text = Console.ReadLine();
+    //    }
+    //    while (!text.Equals("exit"));
+    //}
     // start from unity3d
     public void Start()
     {
-        switch (selectedStrategy) {
-            case ServerStrategies.SIMPLE:
-                serverStrategy = new SimpleServerStrategy ();
-                break;
-            case ServerStrategies.BROADCAST:
-                serverStrategy = new BroadcastServerStrategy ();
-                break;
-            default:
-                throw new NotImplementedException (selectedStrategy + " has not been implemented");
-        }
-        serverStrategy.setUdpServer (this);
+        Debug.Log("Starting: UDPServer");
         if (startListening)
         {
             init();
@@ -63,10 +46,13 @@ public class UDPServer : MonoBehaviour
     public void init()
     {
         print("Listening " + port);
+        serverStrategy = GetComponent<IServerStrategy>();
+        serverStrategy.setUdpServer(this);
         receiveThread = new Thread(new ThreadStart(ReceiveData));
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
+    private int countErrors = 0;
     private void ReceiveData()
     {
         //Server loop
@@ -76,6 +62,7 @@ public class UDPServer : MonoBehaviour
         {
             try
             {
+                print("UDPServer.ReceiveData");
                 // Client msg arrived.
                 IPEndPoint senderIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -94,9 +81,29 @@ public class UDPServer : MonoBehaviour
                 string text = Encoding.UTF8.GetString(data);
                 serverStrategy.processText(text, senderIpEndPoint);
             }
+            catch (ObjectDisposedException err)
+            {
+                Debug.LogError("SERVER: Object disposed. Exiting.");
+                Debug.LogError(err.StackTrace);
+                break;
+            }
+            catch (SocketException err)
+            {
+                Debug.LogError("SERVER: Connection error, retrying...");
+                Debug.LogError(err.StackTrace);
+                //break;
+            }
             catch (Exception err)
             {
-                print(err.ToString());
+                Debug.LogError("SERVER: Exception");
+                Debug.LogError(err.ToString());
+                Debug.LogError(err.StackTrace);
+                if (countErrors++ > 10)
+                {
+                    Debug.LogError("Too many errors");
+                    Application.Quit();
+                    break;
+                }
             }
         }
     }
@@ -130,5 +137,18 @@ public class UDPServer : MonoBehaviour
         IPEndPoint[] ipEndpointList = new IPEndPoint[dictionary.Count];
         dictionary.Values.CopyTo(ipEndpointList, 0);
         return ipEndpointList;
+    }
+
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            udpServer.Close();
+            receiveThread.Abort();
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Errror closing server connection. \r" + e.StackTrace);
+        }
     }
 }
