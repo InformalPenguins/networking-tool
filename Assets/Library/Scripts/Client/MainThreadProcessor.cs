@@ -36,6 +36,10 @@ public class MainThreadProcessor : MonoBehaviour
         {
             _instance = this;
             clientStrategy = GetComponent<IUIHandler>();
+            if (clientStrategy == null) {
+                Application.Quit();
+                throw new Exception("Plsss");
+            }
             //inputManager = GetComponent<InputManager>();
             DontDestroyOnLoad(this.gameObject);
         }
