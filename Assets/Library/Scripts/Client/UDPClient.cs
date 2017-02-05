@@ -29,7 +29,17 @@ public class UDPClient : MonoBehaviour
     public void init()
     {
         remoteEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
-        server = new UdpClient(clientListeningPort);
+        while (true) { 
+            try
+            {
+                server = new UdpClient(clientListeningPort);
+                break;
+            }
+            catch (SocketException e) {
+                clientListeningPort++;
+                continue;
+            }
+        }
         server.EnableBroadcast = true;
 
         print("Sending to " + serverIP + " : " + serverPort);
