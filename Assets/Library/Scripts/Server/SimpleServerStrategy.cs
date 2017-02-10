@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class SimpleServerStrategy : IServerStrategy
 {
-    private int currentPlayer = 0;
-
     public SimpleServerStrategy()
     {
         Debug.Log("Starting: SimpleServerStrategy");
@@ -15,33 +13,24 @@ public class SimpleServerStrategy : IServerStrategy
         this.udpServer = udpServer;
     }
 
-    public override void processText(string text, IPEndPoint senderIpEndPoint)
+    private char[] separator = new char [' '];
+    public override void processText(string text, Player player)
     {
-        int senderPort = senderIpEndPoint.Port;
-        string senderIp = senderIpEndPoint.Address.ToString();
-        string playerKey = senderIp + ":" + senderPort;
+        string[] parameters = text.Split (separator);
+        int idx = 0;
+        int startAction = int.Parse(parameters[idx++]);
 
-        if (text.StartsWith(NetworkConstants.ACTION_BROADCAST))
+        if (startAction == NetworkMessageHelper.ACTION_BROADCAST)
         {
             udpServer.broadCast(text);
         }
-        else if (text.StartsWith(NetworkConstants.ACTION_UPDATE_POSITION + " ") || text.StartsWith(NetworkConstants.INPUT_POSITION))
+        else if (startAction == NetworkMessageHelper.ACTION_UPDATE_POSITION || startAction == NetworkMessageHelper.INPUT_POSITION)
         {
-            udpServer.broadCast(text, senderIpEndPoint);
+            udpServer.broadCast(text, player);
         }
-        else if (text.StartsWith(NetworkConstants.ACTION_SERVER_LOGIN + " "))
+        else if (startAction == NetworkMessageHelper.ACTION_SERVER_LOGIN)
         {
-            udpServer.sendMessage(getNextPlayerMessage(), senderIpEndPoint);
+            udpServer.sendMessage(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_SERVER_LOGIN, player.id), player);
         }
-        else
-        {
-            Console.WriteLine(playerKey + " - UNKNOWN MESSAGE :: " + text);
-        }
-    }
-    private string getNextPlayerMessage()
-    {
-        //TODO: Rework this assign of player
-        String nextPlayerMessage = NetworkConstants.ACTION_SERVER_LOGIN + " " + currentPlayer++;
-        return nextPlayerMessage;
     }
 }

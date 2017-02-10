@@ -9,9 +9,11 @@ public class BroadcastServerStrategy : IServerStrategy
     }
     public void Start()
     {
+        #if UNITY_EDITOR
         Debug.Log("Starting BroadcastServerStrategy");
+        #endif
     }
-    public override void processText(string text, IPEndPoint ipEndPoint)
+    public override void processText(string text, Player player)
     {
         if (text == null || text.Length == 0)
         {

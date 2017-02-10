@@ -11,7 +11,7 @@ using System;
 public class MainThreadProcessor : MonoBehaviour
 {
     //This is the entity that must handle UI changes (if any) from the received message.
-    private IUIHandler clientStrategy;
+    private IUIHandler uiHandler;
 
     private static readonly Queue<Action> _executionQueue = new Queue<Action>();
     private static MainThreadProcessor _instance = null;
@@ -35,10 +35,10 @@ public class MainThreadProcessor : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            clientStrategy = GetComponent<IUIHandler>();
-            if (clientStrategy == null) {
+            uiHandler = GetComponent<IUIHandler>();
+            if (uiHandler == null) {
                 Application.Quit();
-                throw new Exception("Plsss");
+                throw new Exception("IUIHandler has not been added to your Client GameObject.");
             }
             //inputManager = GetComponent<InputManager>();
             DontDestroyOnLoad(this.gameObject);
@@ -66,8 +66,8 @@ public class MainThreadProcessor : MonoBehaviour
 
     public IEnumerator processMessage(string text)
     {
-        if (clientStrategy != null) {
-            clientStrategy.processMessage (text);
+        if (uiHandler != null) {
+            uiHandler.processMessage (text);
         }
         yield return null;
     }

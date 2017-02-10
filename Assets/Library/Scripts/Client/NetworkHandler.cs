@@ -11,9 +11,17 @@ public class NetworkHandler : MonoBehaviour, INetworkHandler
         {
             return;
         }
-        Debug.Log(">> " + text);
-
-        MainThreadProcessor.Instance().Enqueue(MainThreadProcessor.Instance().processMessage(text));
+        string[] parameters = text.Split (' ');
+        int idx = 0;
+        int startAction = int.Parse(parameters [idx++]);
+        if(startAction == NetworkMessageHelper.ACTION_SERVER_LOGIN){
+            int identifier = int.Parse(parameters [idx++]);
+            //Identify 
+            UDPClient.IDENTIFIER = identifier;
+        } else {
+            //Leave it for the UI processor to handle.
+            MainThreadProcessor.Instance().Enqueue(MainThreadProcessor.Instance().processMessage(text));
+        }
     }
 
 }

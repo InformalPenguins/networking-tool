@@ -13,6 +13,7 @@ public class UDPClient : MonoBehaviour
     public string serverIP = "127.0.0.1";
     public int serverPort = 9000;
     public int clientListeningPort = 9001;
+    public static int IDENTIFIER = -1;
 
     IPEndPoint remoteEndPoint;
     UdpClient server;
@@ -35,7 +36,7 @@ public class UDPClient : MonoBehaviour
                 server = new UdpClient(clientListeningPort);
                 break;
             }
-            catch (SocketException e) {
+            catch {
                 clientListeningPort++;
                 continue;
             }
@@ -48,7 +49,8 @@ public class UDPClient : MonoBehaviour
         receiveThread.IsBackground = true;
         receiveThread.Start();
 
-        //sendString(NetworkConstants.ACTION_SERVER_LOGIN);
+        //Ask for identification
+        sendString(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_SERVER_LOGIN));
     }
     int countErrors = 0;
 
@@ -92,9 +94,6 @@ public class UDPClient : MonoBehaviour
                 }
             }
         }
-    }
-    public void sendString(int msg) {
-        this.sendString(msg + " ");
     }
 
     public void sendString(string message)

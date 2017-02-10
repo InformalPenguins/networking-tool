@@ -11,48 +11,36 @@ using UnityEngine;
 
 public class UDPServer : MonoBehaviour
 {
-    Thread receiveThread;
-    UdpClient udpServer;
+    public int port = 9000; // Server listening port
+    public bool startListening = false; // Should auto start or wait to run HOST mode.
 
-    private IServerStrategy serverStrategy;
+    private Thread receiveThread; // The thread to process multiple users.
+    private UdpClient udpServer; // The actual UDP connection listener
+    private IServerStrategy serverStrategy; // The Server Strategy to read messages
+    private int countErrors = 0; // Used for killing APP purposes
+    private int playerCounter = 0;
 
-    public int port = 9000;
-    public bool startListening = false;
-//    private String lastMessage = "";
+    //TODO: stablish a ping behavior to kick players.
+    private Dictionary<string, Player> playersList = new Dictionary<string, Player>();
 
-    private Dictionary<string, IPEndPoint> clientsList = new Dictionary<string, IPEndPoint>();
-
-    //private static void Main()
-    //{
-    //    UDPServer receiveObj = new UDPServer();
-    //    receiveObj.init();
-
-    //    string text = "";
-    //    do
-    //    {
-    //        text = Console.ReadLine();
-    //    }
-    //    while (!text.Equals("exit"));
-    //}
-    // start from unity3d
     public void Start()
     {
-        Debug.Log("Starting: UDPServer");
+        Debug.Log("UDPServer: Starting");
         if (startListening)
         {
             init();
         }
     }
+
     public void init()
     {
-        print("Listening " + port);
+        print("UDPServer: Listening " + port);
         serverStrategy = GetComponent<IServerStrategy>();
         serverStrategy.setUdpServer(this);
         receiveThread = new Thread(new ThreadStart(ReceiveData));
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
-    private int countErrors = 0;
     private void ReceiveData()
     {
         //Server loop
@@ -62,7 +50,6 @@ public class UDPServer : MonoBehaviour
         {
             try
             {
-                print("UDPServer.ReceiveData");
                 // Client msg arrived.
                 IPEndPoint senderIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -71,36 +58,53 @@ public class UDPServer : MonoBehaviour
                 int senderPort = senderIpEndPoint.Port;
                 string senderIp = senderIpEndPoint.Address.ToString();
                 string playerKey = senderIp + ":" + senderPort;
+                Player player = null;
 
-                if (!clientsList.ContainsKey(playerKey))
+                if (!playersList.TryGetValue(playerKey, out player))
                 {
-                    clientsList.Add(playerKey, senderIpEndPoint);
+                    //New user connected.
+                    #if UNITY_EDITOR
+                    Debug.Log("UDPServer :: Adding player with key: " + playerKey);
+                    #endif
+                    player = new Player(senderIpEndPoint);
+                    player.id = playerCounter ++;
+                    playersList.Add(playerKey, player);
                 }
 
                 // Converting data to string
                 string text = Encoding.UTF8.GetString(data);
-                serverStrategy.processText(text, senderIpEndPoint);
+
+                #if UNITY_EDITOR
+                Debug.Log("UDPServer :: Received message from: " + playerKey + ": " + text);
+                #endif
+
+                if(player.id < 0){
+                    //Ignore user until has an id.
+                    continue;
+                }
+
+                serverStrategy.processText(text, player);
             }
             catch (ObjectDisposedException err)
             {
-                Debug.LogError("SERVER: Object disposed. Exiting.");
+                Debug.LogError("UDPServer :: Object disposed. Exiting.");
                 Debug.LogError(err.StackTrace);
                 break;
             }
             catch (SocketException err)
             {
-                Debug.LogError("SERVER: Connection error, retrying...");
+                Debug.LogError("UDPServer :: Connection error, retrying...");
                 Debug.LogError(err.StackTrace);
                 //break;
             }
             catch (Exception err)
             {
-                Debug.LogError("SERVER: Exception");
+                Debug.LogError("UDPServer :: Exception");
                 Debug.LogError(err.ToString());
                 Debug.LogError(err.StackTrace);
                 if (countErrors++ > 10)
                 {
-                    Debug.LogError("Too many errors");
+                    Debug.LogError("UDPServer :: Too many errors");
                     Application.Quit();
                     break;
                 }
@@ -108,35 +112,91 @@ public class UDPServer : MonoBehaviour
         }
     }
 
-    public void broadCast(string msg, IPEndPoint ipEndPoint)
+    /**
+     * Sends a message to all players, except one, usually the sender.
+     * @param msg: The message to send
+     * */
+    public void broadCast(string msg, Player excludedPlayer)
     {
-        IPEndPoint[] players = UDPServer.toArray(this.clientsList);
-        foreach (IPEndPoint player in players)
+        if(msg == null){
+            return;
+        }
+
+        Player[] players = UDPServer.toArray(this.playersList);
+
+        if(players.Length == 0){
+            return;
+        }
+
+        IPEndPoint excludedIPEndPoint = null;
+
+        if(excludedPlayer != null){
+            excludedIPEndPoint = excludedPlayer.ipEndPoint;
+        }
+
+        foreach (Player player in players)
         {
-            if (player != null && !player.Equals(ipEndPoint))
+            if (player != null && player.ipEndPoint != null && !player.ipEndPoint.Equals(excludedIPEndPoint))
             {
                 sendMessage(msg, player);
             }
         }
     }
 
+    /**
+     * Sends a message to all players.
+     * @param msg: The message to send
+     * */
     public void broadCast(string msg)
     {
         this.broadCast(msg, null);
     }
 
-    public void sendMessage(string msg, IPEndPoint ipEndPoint)
+    /**
+     * Sends a message to a player.
+     * @param msg: The message to send
+     * @param player: The player to receive the message bind by its IPEndPoint value.
+     * */
+    public void sendString(string msg, Player player)
     {
+        this.sendMessage (msg, player);
+    }
+
+    /**
+     * Sends a message to a player. Do NOT get confused by GameObject.SendMessage which tries to execute methods in the children.
+     * @param msg: The message to send
+     * @param player: The player to receive the message bind by its IPEndPoint value.
+     * */
+    public void sendMessage(string msg, Player player)
+    {
+        IPEndPoint ipEndPoint = player.ipEndPoint;
         byte[] msgBytes = Encoding.UTF8.GetBytes(msg);
         udpServer.Send(msgBytes, msgBytes.Length, ipEndPoint);
     }
 
 
-    private static IPEndPoint[] toArray(Dictionary<string, IPEndPoint> dictionary)
+    private static Player[] toArray(Dictionary<string, Player> dictionary)
     {
-        IPEndPoint[] ipEndpointList = new IPEndPoint[dictionary.Count];
+        Player[] ipEndpointList = new Player[dictionary.Count];
         dictionary.Values.CopyTo(ipEndpointList, 0);
         return ipEndpointList;
+    }
+    public Dictionary<string, Player> getPlayersList(){
+        return this.playersList;
+    }
+    public Player getPlayer(string key){
+        Player player;
+        this.playersList.TryGetValue(key, out player);
+        return player;
+    }
+    public Player FindPlayer(string username){
+        Player[] players = toArray (playersList);
+        foreach(Player player in players){
+            if(username.Equals(player.username)){
+                return player;
+            }
+        }
+        return null;
     }
 
     private void OnApplicationQuit()
