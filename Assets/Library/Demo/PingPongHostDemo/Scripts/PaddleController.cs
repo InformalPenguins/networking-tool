@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class PaddleController : MonoBehaviour {
     public int id { get; set; }
-    Vector3 velocity = Vector3.zero;
+    private Vector3 velocity = Vector3.zero;
+    private float limitBorder = 8.3f;
+
     public enum PlayerCommand {
         UP, DOWN, STOP
     }
@@ -26,9 +28,12 @@ public class PaddleController : MonoBehaviour {
         //rigidBody.velocity = Vector3.down * paddleSpeed;
         velocity = Vector3.down * paddleSpeed;
     }
-
     void Update() {
-        transform.position = transform.position + velocity;
+        Vector3 next = transform.position + velocity;
+        if (next.y > -limitBorder && next.y < limitBorder)
+        {
+            transform.position = next;
+        }
     }
 
     public void stop(){

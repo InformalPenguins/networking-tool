@@ -3,6 +3,7 @@
 public class NetworkMessageHelper
 {
     public const char separator = ' ';
+    public const string separatorStr = " ";
     //TYPE OF UPDATABLES
     public const int TYPE_PLAYER = 0;
     public const int TYPE_MINION = 1;
@@ -31,7 +32,7 @@ public class NetworkMessageHelper
         string message = "";
         for ( int i = 0 ; i < arguments.Length ; i++ )
         {
-            message += arguments [i] + NetworkMessageHelper.separator;
+            message += arguments [i] + NetworkMessageHelper.separatorStr;
         }
         return message;
     }
