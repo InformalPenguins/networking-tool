@@ -19,12 +19,16 @@ public class UDPClient : MonoBehaviour
     UdpClient server;
     INetworkHandler serverHandler;
     Thread receiveThread;
-
+    int countErrors = 0;
+    public bool startListening = true;
     public void Start()
     {
         Application.runInBackground = true;
         serverHandler = GetComponent<INetworkHandler>();
-        init();
+        if (startListening)
+        {
+            init();
+        }
     }
     
     public void init()
@@ -49,11 +53,34 @@ public class UDPClient : MonoBehaviour
         receiveThread.IsBackground = true;
         receiveThread.Start();
 
-        //Ask for identification
-        sendString(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_SERVER_LOGIN));
+        ////Ask for identification
+        requestIdentifier();
     }
-    int countErrors = 0;
 
+    private bool checkIdentifier = true;
+    private int checkIdentifierDelay = 2;
+    private Coroutine requestIdentifierCoroutine;
+    public IEnumerator requestIdentifierDelayed()
+    {
+        while (checkIdentifier)
+        {
+            yield return new WaitForSeconds(checkIdentifierDelay);
+
+            if (UDPClient.IDENTIFIER >= 0)
+            {
+                checkIdentifier = false;
+                StopCoroutine(requestIdentifierCoroutine);
+            }
+            else {
+                sendString(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_SERVER_LOGIN));
+            }
+        }
+    }
+    private void requestIdentifier()
+    {
+        requestIdentifierCoroutine = StartCoroutine(requestIdentifierDelayed());
+    }
+    
     /**
      * TODO: Handle Reconnect
      * 

@@ -6,4 +6,4 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Library/Demo/_Scenes/Demo.unity
+    path: Assets/Library/Demo/PingPongHostDemo/_Scenes/PingPong.unity

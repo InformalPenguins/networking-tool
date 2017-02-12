@@ -9,14 +9,11 @@ public class BallController : MonoBehaviour {
     void Start () {
         rigidBody = GetComponent<Rigidbody> ();
         origin = transform.position;
-        AddForce ();
+        //AddForce ();
     }
 
-    void AddForce(){
-        bool right = Random.Range (0, 1) == 0;
-        bool up = Random.Range (0, 1) == 0;
-        float verticalForce = Random.Range (5, 7) * (right ? 1:-1);
-        float horizontalForce = Random.Range (6, 12) * (up ? 1:-1);
+    void AddForce(int horizontalForce, int verticalForce)
+    {
         #if UNITY_EDITOR
         Debug.Log("BallController.AddForce");
         Debug.Log("horizontalForce: " + horizontalForce);
@@ -27,9 +24,18 @@ public class BallController : MonoBehaviour {
     }
     void Update(){
     }
-    public void Reset(){
+    public static int[] CalculateForces()
+    {
+        bool right = Random.Range(0, 1) == 0;
+        bool up = Random.Range(0, 1) == 0;
+        int verticalForce = Random.Range(5, 7) * (right ? 1 : -1);
+        int horizontalForce = Random.Range(6, 12) * (up ? 1 : -1);
+        return new int[] { horizontalForce, verticalForce };
+    }
+    public void Reset(int horizontalForce, int verticalForce)
+    {
         rigidBody.velocity = Vector3.zero;
         transform.position = origin;
-        //AddForce ();
+        AddForce (horizontalForce, verticalForce);
     }
 }

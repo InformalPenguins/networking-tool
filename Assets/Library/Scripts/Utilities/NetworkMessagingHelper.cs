@@ -2,17 +2,17 @@
 
 public class NetworkMessageHelper
 {
+    public const char separator = ' ';
     //TYPE OF UPDATABLES
     public const int TYPE_PLAYER = 0;
     public const int TYPE_MINION = 1;
 
     //IN GAME ACTIONS POSITION/ROTATION
     public const int ACTION_UPDATE_POSITION = 0;
-    public const int ACTION_ATTACK = 1;
-    public const int ACTION_STATUS = 2;
-    public const int ACTION_DESTROY = 3;
-    public const int ACTION_SCORE = 4;
-
+    public const int ACTION_START = 1;
+    public const int ACTION_ATTACK = 2;
+    public const int ACTION_SCORE = 3;
+    
 
     // INPUT ACTIONS
     public const int INPUT_POSITION = 10;
@@ -31,7 +31,7 @@ public class NetworkMessageHelper
         string message = "";
         for ( int i = 0 ; i < arguments.Length ; i++ )
         {
-            message += arguments [i] + " ";
+            message += arguments [i] + NetworkMessageHelper.separator;
         }
         return message;
     }

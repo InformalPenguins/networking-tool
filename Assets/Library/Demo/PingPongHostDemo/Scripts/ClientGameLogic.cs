@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameLogic : MonoBehaviour {
+public class ClientGameLogic : MonoBehaviour {
     public static int score1 = 0, score2 = 0;
 
     PaddleController player1, player2;
@@ -16,9 +16,9 @@ public class GameLogic : MonoBehaviour {
     }
     public PaddleController getPlayer(int id){
         switch(id){
-            case 1: 
+            case 0: 
                 return player1;
-            case 2: 
+            case 1: 
                 return player2;
         }
         return null;

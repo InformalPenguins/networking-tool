@@ -4,35 +4,49 @@ using UnityEngine;
 
 public class PingPongInputManager : MonoBehaviour {
     UDPClient udpClient;
-	// Use this for initialization
 	void Start () {
         udpClient = GetComponent<UDPClient> ();
         #if UNITY_STANDALONE
-            #if UNITY_EDITOR
-        Debug.Log("PingPongInputManager.Start:UNITY_EDITOR");
-            #endif
         //Windows|Mac OS
         #else
         //Assume mobile
-        if (mobileInput) {
-            //Activate mobile GameObjects
-        }
         #endif
 	}
-	
-	// Update is called once per frame
-	void Update () {
-        #if UNITY_STANDALONE
-        //Windows|Mac OS
-        if(Input.GetKeyDown(KeyCode.W)){
+
+    // PC Update
+#if UNITY_STANDALONE
+    void Update() {
+            //Windows|Mac OS
+            if (Input.GetKeyDown(KeyCode.W)){
             sendCommand(PaddleController.PlayerCommand.UP);
         } else if(Input.GetKeyDown(KeyCode.S)){
             sendCommand(PaddleController.PlayerCommand.DOWN);
         }
-        #else 
+    }
+#else
+    //Mobile variables
+    bool direction = false;
+    // Mobile Update
+    void Update() {
         //assume mobile
-        #endif
-	}
+        if (Input.touches.Length > 0 && Input.touches[0].phase == TouchPhase.Ended)
+        {
+            direction = !direction;
+
+            if (direction)
+            {
+                sendCommand(PaddleController.PlayerCommand.UP);
+            }
+            else
+            {
+                sendCommand(PaddleController.PlayerCommand.DOWN);
+            }
+
+            Debug.Log("Input.touches: " + Input.touches.Length);
+            Debug.Log("Input.touchCount: " + Input.touchCount);
+        }
+    }
+#endif
     private void sendCommand(PaddleController.PlayerCommand command){
         //Use a Player Interpreter if you require to do a preliminary render in your UI or wait until the server lets you know to do so.
         switch(command){

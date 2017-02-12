@@ -13,10 +13,12 @@ public class SimpleServerStrategy : IServerStrategy
         this.udpServer = udpServer;
     }
 
-    private char[] separator = new char [' '];
     public override void processText(string text, Player player)
     {
-        string[] parameters = text.Split (separator);
+        if (udpServer == null || text == null || text.Trim().Length == 0) {
+            return;
+        }
+        string[] parameters = text.Split (NetworkMessageHelper.separator);
         int idx = 0;
         int startAction = int.Parse(parameters[idx++]);
 
@@ -26,7 +28,7 @@ public class SimpleServerStrategy : IServerStrategy
         }
         else if (startAction == NetworkMessageHelper.ACTION_UPDATE_POSITION || startAction == NetworkMessageHelper.INPUT_POSITION)
         {
-            udpServer.broadCast(text, player);
+            udpServer.broadCast(text);
         }
         else if (startAction == NetworkMessageHelper.ACTION_SERVER_LOGIN)
         {

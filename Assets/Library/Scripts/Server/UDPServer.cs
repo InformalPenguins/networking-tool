@@ -101,7 +101,6 @@ public class UDPServer : MonoBehaviour
             {
                 Debug.LogError("UDPServer :: Exception");
                 Debug.LogError(err.ToString());
-                Debug.LogError(err.StackTrace);
                 if (countErrors++ > 10)
                 {
                     Debug.LogError("UDPServer :: Too many errors");

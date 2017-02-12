@@ -3,51 +3,60 @@ using UnityEngine.UI;
 
 public class PingPongUIHandler : IUIHandler{
     Text scoreText;
-//    PaddleController paddleController;
     GameObject ball, player1, player2;
-    GameLogic gameLogic;
+    BallController ballController;
+    ClientGameLogic gameLogic;
 
     void Start(){
         scoreText = GameObject.Find ("Canvas/Score").GetComponent<Text>();
+        gameLogic = GetComponent<ClientGameLogic>();
         ball = GameObject.Find ("Ball");
+        ballController = ball.GetComponent<BallController>();
         player1 = GameObject.Find ("Paddle1");
         player2 = GameObject.Find ("Paddle2");
-//        paddleController = GetComponent<PaddleController> ();
-        gameLogic = GetComponent<GameLogic> ();
+        PaddleController controller1 = player1.GetComponent<PaddleController>();
+        PaddleController controller2 = player2.GetComponent<PaddleController>();
+        controller1.id = 0;
+        controller2.id = 1;
+        gameLogic.setPlayerController1(controller1);
+        gameLogic.setPlayerController2(controller2);
         updateScoreText ();
     }
 
-    public override void processMessage(string message){
-        string[] parameters = message.Split (' ');
+    public override void processMessage(string message) {
+        string[] parameters = message.Split(NetworkMessageHelper.separator);
         int idx = 0, x, y, z;
         int startAction = int.Parse(parameters[idx++]);
         //Update Ball position
-        if(startAction == PingPongMessageHelper.ACTION_UPDATE_POSITION){
+        if (startAction == PingPongMessageHelper.ACTION_UPDATE_POSITION) {
             //ACTION_UPDATE_POSITION TYPE ID X Y Z
             int type = int.Parse(parameters[1]);
             switch (type) {
                 case PingPongMessageHelper.TYPE_PLAYER:
-                    int playerId = int.Parse (parameters [idx++]);
-                    x = int.Parse (parameters [idx++]);
-                    y = int.Parse (parameters [idx++]);
-                    z = int.Parse (parameters [idx++]);
-                    updatePlayerPosition (playerId, new Vector3(x, y, z));
+                    int playerId = int.Parse(parameters[idx++]);
+                    x = int.Parse(parameters[idx++]);
+                    y = int.Parse(parameters[idx++]);
+                    z = int.Parse(parameters[idx++]);
+                    updatePlayerPosition(playerId, new Vector3(x, y, z));
                     break;
                 case PingPongMessageHelper.TYPE_BALL:
                     x = int.Parse(parameters[idx++]);
                     y = int.Parse(parameters[idx++]);
                     z = int.Parse(parameters[idx++]);
-                    updateBallPosition (new Vector3(x, y, z));
+                    updateBallPosition(new Vector3(x, y, z));
                     break;
             }
-        } else if(startAction == PingPongMessageHelper.INPUT_POSITION){
-            int playerId = int.Parse (parameters [idx++]);
-            int input = int.Parse (parameters [idx++]);
-            sendInput (playerId, input);
-            //        } else if(startAction == PingPongMessageHelper.ACTION_SCORE){
-//            //ACTION_SCORE A B
-//            
+        } else if (startAction == PingPongMessageHelper.INPUT_POSITION) {
+            int playerId = int.Parse(parameters[idx++]);
+            int input = int.Parse(parameters[idx++]);
+            sendInput(playerId, input);
+        } else if (startAction == PingPongMessageHelper.ACTION_START)
+        {
+            int horizontalForce = int.Parse(parameters[idx++]);
+            int verticalForce = int.Parse(parameters[idx++]);
+            ballController.Reset(horizontalForce, verticalForce);
         }
+
 
         //Update paddle positions
 
@@ -77,7 +86,7 @@ public class PingPongUIHandler : IUIHandler{
     }
 
     public void updateScoreText(){
-        string scoreString = GameLogic.score1 + " - " + GameLogic.score2;
+        string scoreString = ClientGameLogic.score1 + " - " + ClientGameLogic.score2;
         scoreText.text = scoreString;
     }
     public void Update(){

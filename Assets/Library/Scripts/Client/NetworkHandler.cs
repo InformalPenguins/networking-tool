@@ -11,7 +11,7 @@ public class NetworkHandler : MonoBehaviour, INetworkHandler
         {
             return;
         }
-        string[] parameters = text.Split (' ');
+        string[] parameters = text.Split (NetworkMessageHelper.separator);
         int idx = 0;
         int startAction = int.Parse(parameters [idx++]);
         if(startAction == NetworkMessageHelper.ACTION_SERVER_LOGIN){
