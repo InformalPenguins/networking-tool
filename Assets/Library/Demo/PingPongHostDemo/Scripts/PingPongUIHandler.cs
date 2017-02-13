@@ -30,7 +30,8 @@ public class PingPongUIHandler : IUIHandler{
         //Update Ball position
         if (startAction == PingPongMessageHelper.ACTION_UPDATE_POSITION) {
             //ACTION_UPDATE_POSITION TYPE ID X Y Z
-            int type = int.Parse(parameters[1]);
+            //Example: 0 0 1 0 0 0
+            int type = int.Parse(parameters[idx++]);
             switch (type) {
                 case PingPongMessageHelper.TYPE_PLAYER:
                     int playerId = int.Parse(parameters[idx++]);
@@ -40,6 +41,8 @@ public class PingPongUIHandler : IUIHandler{
                     updatePlayerPosition(playerId, new Vector3(x, y, z));
                     break;
                 case PingPongMessageHelper.TYPE_BALL:
+                    //ACTION_UPDATE_POSITION TYPE X Y Z
+                    //Example: 0 1 0 0 0
                     x = int.Parse(parameters[idx++]);
                     y = int.Parse(parameters[idx++]);
                     z = int.Parse(parameters[idx++]);

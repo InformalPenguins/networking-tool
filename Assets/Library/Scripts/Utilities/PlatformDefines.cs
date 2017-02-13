@@ -3,20 +3,16 @@ using System.Collections;
 
 public class PlatformDefines : MonoBehaviour {
     void Start () {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         Debug.Log("Unity Editor");
-        #endif
+#endif
 
-        #if UNITY_IOS
-        Debug.Log("Iphone");
-        #endif
+#if UNITY_ANDROID || UNITY_IOS
+        Debug.Log("Mobile");
+#endif
 
-        #if UNITY_STANDALONE_OSX
-        Debug.Log("Stand Alone OSX");
-        #endif
-
-        #if UNITY_STANDALONE_WIN
-        Debug.Log("Stand Alone Windows");
-        #endif
+#if UNITY_STANDALONE
+        Debug.Log("Stand Alone");
+#endif
     }
 }

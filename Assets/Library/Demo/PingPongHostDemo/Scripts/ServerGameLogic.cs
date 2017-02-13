@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class ServerGameLogic : MonoBehaviour
 {
     private UDPServer udpServer;
-    private GameObject NetworkButtons;
+    private GameObject NetworkButtons, ServerUIText, ServerUI;
     public GameObject serverPrefab;
     private GameObject serverGameObject;
     private GameObject clientGameObject;
@@ -19,6 +19,9 @@ public class ServerGameLogic : MonoBehaviour
     void Start()
     {
         NetworkButtons = GameObject.Find("Canvas/NetworkButtons");
+        ServerUI = GameObject.Find("Canvas/ServerUI");
+        ServerUIText = GameObject.Find("Canvas/ServerUI/MessageText");
+        ServerUI.SetActive(false);
         clientGameObject = GameObject.Find("Client");
         udpClient = clientGameObject.GetComponent<UDPClient>();
     }
@@ -29,6 +32,7 @@ public class ServerGameLogic : MonoBehaviour
         udpServer = serverGameObject.GetComponent<UDPServer>();
         udpServer.init();
         setupClient("127.0.0.1");
+        ServerUI.SetActive(true);
         notifyStart = true;
     }
     public void StartAsClient()
@@ -71,6 +75,11 @@ public class ServerGameLogic : MonoBehaviour
             throw new Exception("MainThreadProcessor could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene.");
         }
         return _instance;
+    }
+
+    public void debugBroadCast() {
+        string msg = ServerUIText.GetComponent<InputField>().text;
+        udpServer.broadCast(msg);
     }
 
     public static bool Exists()
