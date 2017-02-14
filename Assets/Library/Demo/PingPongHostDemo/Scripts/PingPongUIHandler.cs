@@ -25,7 +25,8 @@ public class PingPongUIHandler : IUIHandler{
 
     public override void processMessage(string message) {
         string[] parameters = message.Split(NetworkMessageHelper.separator);
-        int idx = 0, x, y, z, vx, vy, vz;
+        int idx = 0;
+        float x, y, z, vx, vy, vz;
         int startAction = int.Parse(parameters[idx++]);
         //Update Ball position
         if (startAction == PingPongMessageHelper.ACTION_UPDATE_POSITION) {
@@ -35,21 +36,21 @@ public class PingPongUIHandler : IUIHandler{
             switch (type) {
                 case PingPongMessageHelper.TYPE_PLAYER:
                     int playerId = int.Parse(parameters[idx++]);
-                    x = int.Parse(parameters[idx++]);
-                    y = int.Parse(parameters[idx++]);
-                    z = int.Parse(parameters[idx++]);
+                    x = float.Parse(parameters[idx++]);
+                    y = float.Parse(parameters[idx++]);
+                    z = float.Parse(parameters[idx++]);
                     updatePlayerPosition(playerId, new Vector3(x, y, z));
                     break;
                 case PingPongMessageHelper.TYPE_BALL:
                     //ACTION_UPDATE_POSITION TYPE X Y Z
                     //Example: 0 1 0 0 0
-                    x = int.Parse(parameters[idx++]);
-                    y = int.Parse(parameters[idx++]);
-                    z = int.Parse(parameters[idx++]);
+                    x = float.Parse(parameters[idx++]);
+                    y = float.Parse(parameters[idx++]);
+                    z = float.Parse(parameters[idx++]);
 
-                    vx = int.Parse(parameters[idx++]);
-                    vy = int.Parse(parameters[idx++]);
-                    vz = int.Parse(parameters[idx++]);
+                    vx = float.Parse(parameters[idx++]);
+                    vy = float.Parse(parameters[idx++]);
+                    vz = float.Parse(parameters[idx++]);
                     updateBallPosition(new Vector3(x, y, z), new Vector3(vx, vy, vz));
                     break;
             }
