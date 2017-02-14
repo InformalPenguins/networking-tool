@@ -86,7 +86,7 @@ public class UDPClient : MonoBehaviour
      * 
      * Receives the message from the server
      * */
-    private bool isClientListening = false;
+    private bool isClientListening = true;
     private void serverListener()
     {
         while (isClientListening)
