@@ -75,7 +75,8 @@ public class ServerGameLogic : MonoBehaviour
         if (!isServer) {
             return;
         }
-        if ((nextUpdateSeconds -= Time.deltaTime) < delayUpdate)
+        nextUpdateSeconds -= Time.deltaTime;
+        if (nextUpdateSeconds <= 0)
         {
             nextUpdateSeconds = delayUpdate;
             broadCastBall();
