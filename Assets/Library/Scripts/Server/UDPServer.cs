@@ -41,12 +41,13 @@ public class UDPServer : MonoBehaviour
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
+    private bool isServerListening = true;
     private void ReceiveData()
     {
         //Server loop
         udpServer = new UdpClient(port);
         udpServer.EnableBroadcast = true;
-        while (true)
+        while (isServerListening)
         {
             try
             {
@@ -202,8 +203,15 @@ public class UDPServer : MonoBehaviour
     {
         try
         {
-            udpServer.Close();
-            receiveThread.Abort();
+            isServerListening = false;
+            if (udpServer != null)
+            {
+                udpServer.Close();
+            }
+            if (receiveThread != null)
+            {
+                receiveThread.Abort();
+            }
         }
         catch (Exception e)
         {

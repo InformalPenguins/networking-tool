@@ -80,15 +80,16 @@ public class UDPClient : MonoBehaviour
     {
         requestIdentifierCoroutine = StartCoroutine(requestIdentifierDelayed());
     }
-    
+
     /**
      * TODO: Handle Reconnect
      * 
      * Receives the message from the server
      * */
+    private bool isClientListening = false;
     private void serverListener()
     {
-        while (true)
+        while (isClientListening)
         {
             try
             {
@@ -144,8 +145,15 @@ public class UDPClient : MonoBehaviour
     {
         try
         {
-            server.Close();
-            receiveThread.Abort();
+            isClientListening = false;
+            if (server != null)
+            {
+                server.Close();
+            }
+            if (receiveThread != null)
+            {
+                receiveThread.Abort();
+            }
         }
         catch (Exception e)
         {

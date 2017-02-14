@@ -13,7 +13,7 @@ public class ServerGameLogic : MonoBehaviour
     public GameObject serverPrefab;
     private GameObject serverGameObject;
     private GameObject clientGameObject;
-    private bool isServer = false;
+    private bool notifyStart = false, isServer = false;
     private UDPClient udpClient;
 
     private GameObject ball, paddle1, paddle2;
@@ -37,7 +37,7 @@ public class ServerGameLogic : MonoBehaviour
         udpServer.init();
         setupClient("127.0.0.1");
         ServerUI.SetActive(true);
-        isServer = true;
+        isServer = notifyStart = true;
     }
     public void StartAsClient()
     {
@@ -82,9 +82,9 @@ public class ServerGameLogic : MonoBehaviour
             broadCastBall();
             broadCastPaddles();
         }
-        if (isServer && udpServer.getPlayersList().Keys.Count > 1)
+        if (notifyStart && udpServer.getPlayersList().Keys.Count > 1)
         {
-            isServer = false;
+            notifyStart = false;
             int[] hv = BallController.CalculateForces();
             udpServer.broadCast(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_START, hv[0], hv[1]));
         }
