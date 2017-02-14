@@ -28,6 +28,17 @@ public class NetworkMessageHelper
     public static bool StartsWith(string message, int number){
         return message.StartsWith (number + " ");
     }
+    /**
+     * */
+    public static string BuildMessage(params object[] arguments)
+    {
+        string message = "";
+        for (int i = 0; i < arguments.Length; i++)
+        {
+            message += arguments[i] + NetworkMessageHelper.separatorStr;
+        }
+        return message;
+    }
     public static string BuildMessage(params int[] arguments){
         string message = "";
         for ( int i = 0 ; i < arguments.Length ; i++ )

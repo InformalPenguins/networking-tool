@@ -13,9 +13,10 @@ public class ServerGameLogic : MonoBehaviour
     public GameObject serverPrefab;
     private GameObject serverGameObject;
     private GameObject clientGameObject;
-    private bool notifyStart = false;
+    private bool isServer = false;
     private UDPClient udpClient;
 
+    private GameObject ball, paddle1, paddle2;
     void Start()
     {
         NetworkButtons = GameObject.Find("Canvas/NetworkButtons");
@@ -24,6 +25,9 @@ public class ServerGameLogic : MonoBehaviour
         ServerUI.SetActive(false);
         clientGameObject = GameObject.Find("Client");
         udpClient = clientGameObject.GetComponent<UDPClient>();
+        ball = GameObject.Find("Actors/Ball");
+        paddle1 = GameObject.Find("Actors/Paddle1");
+        paddle2 = GameObject.Find("Actors/Paddle2");
     }
     public void StartAsServer()
     {
@@ -33,7 +37,7 @@ public class ServerGameLogic : MonoBehaviour
         udpServer.init();
         setupClient("127.0.0.1");
         ServerUI.SetActive(true);
-        notifyStart = true;
+        isServer = true;
     }
     public void StartAsClient()
     {
@@ -56,11 +60,30 @@ public class ServerGameLogic : MonoBehaviour
     {
         NetworkButtons.SetActive(false);
     }
+    float delayUpdate = 5f, nextUpdateSeconds = 0;
+    private void broadCastBall() {
+        Vector3 position = ball.transform.position;
+        Vector3 velocity = ball.GetComponent<Rigidbody>().velocity;
+        //Adjusts position and velocity of the ball
+        udpServer.broadCast(PingPongMessageHelper.BuildMessage(PingPongMessageHelper.ACTION_UPDATE_POSITION, PingPongMessageHelper.TYPE_BALL, position.x, position.y, position.z, velocity.x, velocity.y, velocity.z));
+    }
+    private void broadCastPaddles() {
+
+    }
     void Update()
     {
-        if (notifyStart && udpServer.getPlayersList().Keys.Count > 1)
+        if (!isServer) {
+            return;
+        }
+        if ((nextUpdateSeconds -= Time.deltaTime) < delayUpdate)
         {
-            notifyStart = false;
+            nextUpdateSeconds = delayUpdate;
+            broadCastBall();
+            broadCastPaddles();
+        }
+        if (isServer && udpServer.getPlayersList().Keys.Count > 1)
+        {
+            isServer = false;
             int[] hv = BallController.CalculateForces();
             udpServer.broadCast(NetworkMessageHelper.BuildMessage(NetworkMessageHelper.ACTION_START, hv[0], hv[1]));
         }

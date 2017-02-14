@@ -22,7 +22,12 @@ public class BallController : MonoBehaviour {
 
         rigidBody.AddForce(horizontalForce, verticalForce, 0, ForceMode.Impulse);
     }
+    float delayLog = 1, actualDelay = 0;
     void Update(){
+        if ((actualDelay -= Time.deltaTime) < delayLog) {
+            actualDelay = delayLog;
+            Debug.Log("BALL: Velocity: " + rigidBody.velocity);
+        }
     }
     public static int[] CalculateForces()
     {

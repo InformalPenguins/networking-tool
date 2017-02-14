@@ -59,6 +59,7 @@ MonoBehaviour:
   serverIP: 127.0.0.1
   serverPort: 9000
   clientListeningPort: 9001
+  startListening: 0
 --- !u!114 &114175332581271328
 MonoBehaviour:
   m_ObjectHideFlags: 1

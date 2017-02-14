@@ -25,7 +25,7 @@ public class PingPongUIHandler : IUIHandler{
 
     public override void processMessage(string message) {
         string[] parameters = message.Split(NetworkMessageHelper.separator);
-        int idx = 0, x, y, z;
+        int idx = 0, x, y, z, vx, vy, vz;
         int startAction = int.Parse(parameters[idx++]);
         //Update Ball position
         if (startAction == PingPongMessageHelper.ACTION_UPDATE_POSITION) {
@@ -46,7 +46,11 @@ public class PingPongUIHandler : IUIHandler{
                     x = int.Parse(parameters[idx++]);
                     y = int.Parse(parameters[idx++]);
                     z = int.Parse(parameters[idx++]);
-                    updateBallPosition(new Vector3(x, y, z));
+
+                    vx = int.Parse(parameters[idx++]);
+                    vy = int.Parse(parameters[idx++]);
+                    vz = int.Parse(parameters[idx++]);
+                    updateBallPosition(new Vector3(x, y, z), new Vector3(vx, vy, vz));
                     break;
             }
         } else if (startAction == PingPongMessageHelper.INPUT_POSITION) {
@@ -80,8 +84,9 @@ public class PingPongUIHandler : IUIHandler{
                 break;
         }
     } 
-    private void updateBallPosition(Vector3 position){
+    private void updateBallPosition(Vector3 position, Vector3 velocity){
         ball.transform.position = position;
+        ball.GetComponent<Rigidbody>().velocity = velocity;
     }
     private void updatePlayerPosition(int playerId, Vector3 position){
         GameObject player = gameLogic.getPlayer (playerId).gameObject;
