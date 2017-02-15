@@ -4,6 +4,7 @@ public class NetworkMessageHelper
 {
     public const char separator = ' ';
     public const string separatorStr = " ";
+    public const string LOCALHOST = "127.0.0.1";
     //TYPE OF UPDATABLES
     public const int TYPE_PLAYER = 0;
     public const int TYPE_MINION = 1;

@@ -122,6 +122,7 @@ public class UDPClient : MonoBehaviour
                 }
             }
         }
+        Debug.Log("UDPClient: Clearing server listener.");
     }
 
     public void sendString(string message)
@@ -140,8 +141,8 @@ public class UDPClient : MonoBehaviour
         }
     }
 
-
-    private void OnApplicationQuit()
+    
+    public void OnApplicationQuit()
     {
         try
         {

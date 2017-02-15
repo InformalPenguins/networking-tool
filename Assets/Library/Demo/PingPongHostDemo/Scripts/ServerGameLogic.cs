@@ -35,7 +35,7 @@ public class ServerGameLogic : MonoBehaviour
         serverGameObject = Instantiate(serverPrefab, transform);
         udpServer = serverGameObject.GetComponent<UDPServer>();
         udpServer.init();
-        setupClient("127.0.0.1");
+        setupClient(NetworkMessageHelper.LOCALHOST);
         ServerUI.SetActive(true);
         isServer = notifyStart = true;
     }
@@ -60,7 +60,7 @@ public class ServerGameLogic : MonoBehaviour
     {
         NetworkButtons.SetActive(false);
     }
-    float delayUpdate = 5f, nextUpdateSeconds = 0;
+    float delayUpdate = .2f, nextUpdateSeconds = 0;
     private void broadCastBall() {
         Vector3 position = ball.transform.position;
         Vector3 velocity = ball.GetComponent<Rigidbody>().velocity;
@@ -118,6 +118,25 @@ public class ServerGameLogic : MonoBehaviour
             _instance = this;
             //inputManager = GetComponent<InputManager>();
             DontDestroyOnLoad(this.gameObject);
+        }
+    }
+    void OnApplicationQuit()
+    {
+        try
+        {
+            Debug.Log("OnApplicationQuit");
+            if (udpServer != null)
+            {
+                udpServer.OnApplicationQuit();
+            }
+            if (udpClient != null)
+            {
+                udpClient.OnApplicationQuit();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Errror closing server connection. \r" + e.StackTrace);
         }
     }
 }

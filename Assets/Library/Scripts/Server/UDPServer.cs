@@ -37,12 +37,12 @@ public class UDPServer : MonoBehaviour
         print("UDPServer: Listening " + port);
         serverStrategy = GetComponent<IServerStrategy>();
         serverStrategy.setUdpServer(this);
-        receiveThread = new Thread(new ThreadStart(ReceiveData));
+        receiveThread = new Thread(new ThreadStart(clientListener));
         receiveThread.IsBackground = true;
         receiveThread.Start();
     }
     private bool isServerListening = true;
-    private void ReceiveData()
+    private void clientListener()
     {
         //Server loop
         udpServer = new UdpClient(port);
@@ -110,6 +110,7 @@ public class UDPServer : MonoBehaviour
                 }
             }
         }
+        Debug.Log("UDPServer: Clearing clientListener.");
     }
 
     /**
@@ -199,18 +200,18 @@ public class UDPServer : MonoBehaviour
         return null;
     }
 
-    private void OnApplicationQuit()
+   public void OnApplicationQuit()
     {
         try
         {
             isServerListening = false;
-            if (udpServer != null)
-            {
-                udpServer.Close();
-            }
             if (receiveThread != null)
             {
                 receiveThread.Abort();
+            }
+            if (udpServer != null)
+            {
+                udpServer.Close();
             }
         }
         catch (Exception e)
