@@ -78,3 +78,4 @@ MonoBehaviour:
   serverIP: 127.0.0.1
   serverPort: 9000
   clientListeningPort: 9001
+  startListening: 1
