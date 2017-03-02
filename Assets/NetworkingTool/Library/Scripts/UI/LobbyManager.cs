@@ -72,11 +72,11 @@ public class LobbyManager : MonoBehaviour
         joinBButton.SetActive(false);
         spectateButton.SetActive(false);
         startButton.SetActive(false); 
-        if (me != null)
-        {
-            //Attempt to destroy existing position in UI
-            Destroy(me.getGameObject());
-        }
+//        if (me != null)
+//        {
+//            //Attempt to destroy existing position in UI
+//            Destroy(me.getGameObject());
+//        }
     }
     private void setSpectateControls()
     {
@@ -117,7 +117,6 @@ public class LobbyManager : MonoBehaviour
     {
 
         playersList.Add(new Player(id, name));
-
         renderSpectatorsListText();
     }
     public void JoinTeam(string teamName, int playerId)
@@ -165,11 +164,16 @@ public class LobbyManager : MonoBehaviour
     {
         Player found = findPlayer(playerId);
         Destroy(found.getGameObject());
+        found.setGameObject(null);
+        renderSpectatorsListText();
     }
     public void AssignPlayer(int id)
     {
         me = findPlayer(id);
         resetStates();
+        spectateButton.SetActive (false);
+        joinAButton.SetActive (true);
+        joinBButton.SetActive (true);
     }
     private Player findPlayer(int id)
     {
