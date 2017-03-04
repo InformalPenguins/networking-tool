@@ -158,14 +158,34 @@ public class LobbyManager : MonoBehaviour
         }
 
         found.setGameObject(teamName, playerCard);
+        //found.setTeam(teamName);
         renderSpectatorsListText();
     }
     public void Spectate(int playerId)
     {
         Player found = findPlayer(playerId);
+        if (found == null)
+        {
+            //Localize error messages.
+            sendError("Wrong player id");
+            return;
+        }
+
         Destroy(found.getGameObject());
         found.setGameObject(null, null);
         renderSpectatorsListText();
+        checkMeStates();
+    }
+    private void checkMeStates()
+    {
+        if (me == null)
+        {
+            return;
+        }
+        string team = me.getTeam();
+        spectateButton.SetActive(team != null);
+        joinAButton.SetActive(!("A".Equals(team)));
+        joinBButton.SetActive(!("B".Equals(team)));
     }
     public void AssignPlayer(int id)
     {
@@ -177,9 +197,7 @@ public class LobbyManager : MonoBehaviour
         }
 
         resetStates();
-        spectateButton.SetActive (false);
-        joinAButton.SetActive (true);
-        joinBButton.SetActive (true);
+        checkMeStates();
     }
     private Player findPlayer(int id)
     {
@@ -229,7 +247,7 @@ public class LobbyManager : MonoBehaviour
         spectatorsListText.text = names;
     }
 
-    public class Player{
+    public class Player {
         int id;
         string name;
         GameObject gameObject;
@@ -237,6 +255,9 @@ public class LobbyManager : MonoBehaviour
         public Player(int id, string name) {
             this.id = id;
             this.name = name;
+        }
+        public string getTeam() {
+            return this.team;
         }
         public GameObject getGameObject()
         {
