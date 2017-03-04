@@ -66,17 +66,18 @@ public class LobbyManager : MonoBehaviour
     }
     private void resetStates()
     {
-        spectatorsListText.text = "";
         //Initially hide all buttons until you add yourself.
         joinAButton.SetActive(false);
         joinBButton.SetActive(false);
         spectateButton.SetActive(false);
-        startButton.SetActive(false); 
-//        if (me != null)
-//        {
-//            //Attempt to destroy existing position in UI
-//            Destroy(me.getGameObject());
-//        }
+        startButton.SetActive(false);
+        //        if (me != null)
+        //        {
+        //            //Attempt to destroy existing position in UI
+        //            Destroy(me.getGameObject());
+        //        }
+        //spectatorsListText.text = "";
+        renderSpectatorsListText();
     }
     private void setSpectateControls()
     {
@@ -127,7 +128,6 @@ public class LobbyManager : MonoBehaviour
         }
         Destroy(found.getGameObject());
         GameObject playerCard = null, localButton = null, counterButton = null;
-
         switch (teamName)
         {
             case "A":
@@ -157,19 +157,25 @@ public class LobbyManager : MonoBehaviour
             }
         }
 
-        found.setGameObject(playerCard);
+        found.setGameObject(teamName, playerCard);
         renderSpectatorsListText();
     }
     public void Spectate(int playerId)
     {
         Player found = findPlayer(playerId);
         Destroy(found.getGameObject());
-        found.setGameObject(null);
+        found.setGameObject(null, null);
         renderSpectatorsListText();
     }
     public void AssignPlayer(int id)
     {
         me = findPlayer(id);
+        if (me == null) {
+            //Localize error messages.
+            sendError("Wrong player id");
+            return;
+        }
+
         resetStates();
         spectateButton.SetActive (false);
         joinAButton.SetActive (true);
@@ -227,6 +233,7 @@ public class LobbyManager : MonoBehaviour
         int id;
         string name;
         GameObject gameObject;
+        string team;
         public Player(int id, string name) {
             this.id = id;
             this.name = name;
@@ -235,9 +242,10 @@ public class LobbyManager : MonoBehaviour
         {
             return gameObject;
         }
-        public void setGameObject(GameObject gameObject)
+        public void setGameObject(string team, GameObject gameObject)
         {
             this.gameObject = gameObject;
+            this.team = team;
         }
         public bool isSpectating() {
             //Not having a live UI element means the user is in spectate mode.
@@ -246,8 +254,9 @@ public class LobbyManager : MonoBehaviour
         public int getId() { return id; }
         public string getName() { return name;  }
     }
-
-
+    private void sendError(string msg) {
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.ERROR, msg, SendMessageOptions.RequireReceiver);
+    }
 
     class LobbyManagerListenerMethods
     {
