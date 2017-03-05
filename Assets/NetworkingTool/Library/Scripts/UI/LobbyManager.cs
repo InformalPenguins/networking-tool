@@ -66,17 +66,18 @@ public class LobbyManager : MonoBehaviour
     }
     private void resetStates()
     {
-        spectatorsListText.text = "";
         //Initially hide all buttons until you add yourself.
         joinAButton.SetActive(false);
         joinBButton.SetActive(false);
         spectateButton.SetActive(false);
-        startButton.SetActive(false); 
-//        if (me != null)
-//        {
-//            //Attempt to destroy existing position in UI
-//            Destroy(me.getGameObject());
-//        }
+        startButton.SetActive(false);
+        //        if (me != null)
+        //        {
+        //            //Attempt to destroy existing position in UI
+        //            Destroy(me.getGameObject());
+        //        }
+        //spectatorsListText.text = "";
+        renderSpectatorsListText();
     }
     private void setSpectateControls()
     {
@@ -127,7 +128,6 @@ public class LobbyManager : MonoBehaviour
         }
         Destroy(found.getGameObject());
         GameObject playerCard = null, localButton = null, counterButton = null;
-
         switch (teamName)
         {
             case "A":
@@ -157,23 +157,47 @@ public class LobbyManager : MonoBehaviour
             }
         }
 
-        found.setGameObject(playerCard);
+        found.setGameObject(teamName, playerCard);
+        //found.setTeam(teamName);
         renderSpectatorsListText();
     }
     public void Spectate(int playerId)
     {
         Player found = findPlayer(playerId);
+        if (found == null)
+        {
+            //Localize error messages.
+            sendError("Wrong player id");
+            return;
+        }
+
         Destroy(found.getGameObject());
-        found.setGameObject(null);
+        found.setGameObject(null, null);
         renderSpectatorsListText();
+        checkMeStates();
+    }
+    private void checkMeStates()
+    {
+        if (me == null)
+        {
+            return;
+        }
+        string team = me.getTeam();
+        spectateButton.SetActive(team != null);
+        joinAButton.SetActive(!("A".Equals(team)));
+        joinBButton.SetActive(!("B".Equals(team)));
     }
     public void AssignPlayer(int id)
     {
         me = findPlayer(id);
+        if (me == null) {
+            //Localize error messages.
+            sendError("Wrong player id");
+            return;
+        }
+
         resetStates();
-        spectateButton.SetActive (false);
-        joinAButton.SetActive (true);
-        joinBButton.SetActive (true);
+        checkMeStates();
     }
     private Player findPlayer(int id)
     {
@@ -223,21 +247,26 @@ public class LobbyManager : MonoBehaviour
         spectatorsListText.text = names;
     }
 
-    public class Player{
+    public class Player {
         int id;
         string name;
         GameObject gameObject;
+        string team;
         public Player(int id, string name) {
             this.id = id;
             this.name = name;
+        }
+        public string getTeam() {
+            return this.team;
         }
         public GameObject getGameObject()
         {
             return gameObject;
         }
-        public void setGameObject(GameObject gameObject)
+        public void setGameObject(string team, GameObject gameObject)
         {
             this.gameObject = gameObject;
+            this.team = team;
         }
         public bool isSpectating() {
             //Not having a live UI element means the user is in spectate mode.
@@ -246,8 +275,9 @@ public class LobbyManager : MonoBehaviour
         public int getId() { return id; }
         public string getName() { return name;  }
     }
-
-
+    private void sendError(string msg) {
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.ERROR, msg, SendMessageOptions.RequireReceiver);
+    }
 
     class LobbyManagerListenerMethods
     {
