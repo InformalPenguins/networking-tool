@@ -1,11 +1,17 @@
-﻿using System.Collections;
+﻿using Assets.NetworkingTool.Library.Scripts.UI;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+//[ExecuteInEditMode]
+//[System.Serializable]
 public class LobbyManager : MonoBehaviour
 {
+
+    public static bool isOwner = false;
+
     //Constants
     public const string LOBBY_CONTAINER = "Canvas/Lobby";
     public const string TEAMS_CONTAINER = LOBBY_CONTAINER + "/Teams";
@@ -26,19 +32,20 @@ public class LobbyManager : MonoBehaviour
 
 
     // Private variables
-    private Player me;
+    private LobbyPlayer me;
 
     private GameObject teamAContainer, teamBContainer, spectateButton;
     private GameObject joinAButton, joinBButton, startButton;
     private Text spectateText, spectatorsListText;
+    private List<LobbyPlayer> playersList = new List<LobbyPlayer>();
 
     // UI Variables
 
-    [Header("Not yet implemented")]
-    public int maxPlayers = 2;
-    public int maxSpectators = 3;
-    public int minimumPlayers = 2;
     public bool allowSpectators = true;
+    public int maxSpectators = 3;
+    public int maxPlayersByTeam = 2;
+    public int minimumPlayersByTeam = 1;
+
     [Range(1, 2)]
     public int teamsCount;
 
@@ -59,6 +66,7 @@ public class LobbyManager : MonoBehaviour
         if (lobbyMessageHandler == null) {
             throw new MissingComponentException("LobbyMessageHandler not found. This object will receive all messages coming from the LobbyManager.");
         }
+        LobbyManager.isOwner = false; //wait until server assigns you as owner.
         initializeObjects();
         setSpectateControls();
         renderSpectatorsListText();
@@ -102,27 +110,95 @@ public class LobbyManager : MonoBehaviour
         this.lobbyMessageHandler = lobbyMessageHandler;
     }
     public void JoinAClicked(){
-        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.JOIN_TEAM, "A", SendMessageOptions.RequireReceiver);
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.JOIN_TEAM, LobbyManagerTeamNames.TEAM_A, SendMessageOptions.RequireReceiver);
     }
     public void JoinBClicked()
     {
-        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.JOIN_TEAM, "B", SendMessageOptions.RequireReceiver);
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.JOIN_TEAM, LobbyManagerTeamNames.TEAM_B, SendMessageOptions.RequireReceiver);
     }
     public void SpectatePressed()
     {
         lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.SPECTATE, SendMessageOptions.RequireReceiver);
     }
+    public void NotifyPlayerListChanged()
+    {
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.GET_PLAYERS, playersList, SendMessageOptions.RequireReceiver);
+    }
+    public void StartPressed()
+    {
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.START, SendMessageOptions.RequireReceiver);
+    }
+    public void QuitPressed()
+    {
+        lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.QUIT, SendMessageOptions.RequireReceiver);
+    }
 
-    private List<Player> playersList = new List<Player>();
+    private bool hasAllowedPlayerSpots()
+    {
+        return hasAllowedPlayerSpotsByTeam(LobbyManagerTeamNames.TEAM_A) && hasAllowedPlayerSpotsByTeam(LobbyManagerTeamNames.TEAM_B);
+    }
+    private int getPlayersCountByTeam(string team)
+    {
+        if (team == null || playersList.Count == 0) { return 0; }
+        int c = 0;
+        foreach (LobbyPlayer p in playersList)
+        {
+            if (team.Equals(p.getTeam()))
+            {
+                c++;
+            }
+        }
+        return c;
+    }
+    private bool hasAllowedPlayerSpotsByTeam(string team)
+    {
+        if (team == null) { return false; }
+        return getPlayersCountByTeam(team) < maxPlayersByTeam;
+    }
+    private bool hasMinPlayerSpotsTakenByTeam(string team)
+    {
+        if (team == null || playersList.Count == 0) { return false; }
+        return getPlayersCountByTeam(team) >= minimumPlayersByTeam;
+    }
     public void AddPlayer(int id, string name)
     {
-
-        playersList.Add(new Player(id, name));
+        playersList.Add(new LobbyPlayer(id, name));
         renderSpectatorsListText();
+        NotifyPlayerListChanged();
     }
+    public void RemovePlayer(int id)
+    {
+        LobbyPlayer player = findPlayer(id);
+        if (player == null)
+        {
+            //Localize error messages.
+            sendError("Cannot remove player: Wrong player id {"+ id +"}");
+            return;
+        }
+        if (player.getGameObject() != null) {
+            Destroy(player.getGameObject());
+        }
+
+        player.setGameObject(null, null);
+
+        playersList.Remove(player);
+        if (player.Equals(me)) {
+            me = null;
+        }
+
+        resetStates();
+        checkMeStates();
+
+        NotifyPlayerListChanged();
+    }
+
     public void JoinTeam(string teamName, int playerId)
     {
-        Player found = findPlayer(playerId);
+        if (!hasAllowedPlayerSpotsByTeam(teamName))
+        {
+            return;
+        }
+        LobbyPlayer found = findPlayer(playerId);
         if (found == null) {
             return;
         }
@@ -130,12 +206,12 @@ public class LobbyManager : MonoBehaviour
         GameObject playerCard = null, localButton = null, counterButton = null;
         switch (teamName)
         {
-            case "A":
+            case LobbyManagerTeamNames.TEAM_A:
                 playerCard = Instantiate(player1LobbyPrefab, teamAContainer.transform, false);
                 counterButton = joinBButton;
                 localButton = joinAButton;
                 break;
-            case "B":
+            case LobbyManagerTeamNames.TEAM_B:
                 playerCard = Instantiate(player2LobbyPrefab, teamBContainer.transform, false);
                 counterButton = joinAButton;
                 localButton = joinBButton;
@@ -160,10 +236,11 @@ public class LobbyManager : MonoBehaviour
         found.setGameObject(teamName, playerCard);
         //found.setTeam(teamName);
         renderSpectatorsListText();
+        checkMeStates();
     }
     public void Spectate(int playerId)
     {
-        Player found = findPlayer(playerId);
+        LobbyPlayer found = findPlayer(playerId);
         if (found == null)
         {
             //Localize error messages.
@@ -184,13 +261,17 @@ public class LobbyManager : MonoBehaviour
         }
         string team = me.getTeam();
         spectateButton.SetActive(team != null);
-        joinAButton.SetActive(!("A".Equals(team)));
-        joinBButton.SetActive(!("B".Equals(team)));
+        joinAButton.SetActive(!(LobbyManagerTeamNames.TEAM_A.Equals(team)) && hasAllowedPlayerSpotsByTeam(LobbyManagerTeamNames.TEAM_A));
+        joinBButton.SetActive(!(LobbyManagerTeamNames.TEAM_B.Equals(team)) && hasAllowedPlayerSpotsByTeam(LobbyManagerTeamNames.TEAM_B));
+        if (LobbyManager.isOwner && hasMinPlayerSpotsTakenByTeam(LobbyManagerTeamNames.TEAM_A) && hasMinPlayerSpotsTakenByTeam(LobbyManagerTeamNames.TEAM_B)) {
+            startButton.SetActive(true);
+        }
     }
     public void AssignPlayer(int id)
     {
         me = findPlayer(id);
-        if (me == null) {
+        if (me == null)
+        {
             //Localize error messages.
             sendError("Wrong player id");
             return;
@@ -199,10 +280,11 @@ public class LobbyManager : MonoBehaviour
         resetStates();
         checkMeStates();
     }
-    private Player findPlayer(int id)
+    
+    private LobbyPlayer findPlayer(int id)
     {
-        Player found = null;
-        foreach (Player player in playersList)
+        LobbyPlayer found = null;
+        foreach (LobbyPlayer player in playersList)
         {
             if (player.getId() == id)
             {
@@ -212,10 +294,10 @@ public class LobbyManager : MonoBehaviour
         }
         return found;
     }
-    private Player findPlayer(string userName)
+    private LobbyPlayer findPlayer(string userName)
     {
-        Player found = null;
-        foreach (Player player in playersList)
+        LobbyPlayer found = null;
+        foreach (LobbyPlayer player in playersList)
         {
             if (userName.Equals(player.getName()))
             {
@@ -228,10 +310,10 @@ public class LobbyManager : MonoBehaviour
     public void renderSpectatorsListText()
     {
         string names = "";
-        Player[] playersArray = playersList.ToArray();
+        LobbyPlayer[] playersArray = playersList.ToArray();
         for (int i = 0; i < playersArray.Length; i++)
         {
-            Player player = playersArray[i];
+            LobbyPlayer player = playersArray[i];
             if (!player.isSpectating()) {
                 continue;
             }
@@ -246,35 +328,6 @@ public class LobbyManager : MonoBehaviour
 
         spectatorsListText.text = names;
     }
-
-    public class Player {
-        int id;
-        string name;
-        GameObject gameObject;
-        string team;
-        public Player(int id, string name) {
-            this.id = id;
-            this.name = name;
-        }
-        public string getTeam() {
-            return this.team;
-        }
-        public GameObject getGameObject()
-        {
-            return gameObject;
-        }
-        public void setGameObject(string team, GameObject gameObject)
-        {
-            this.gameObject = gameObject;
-            this.team = team;
-        }
-        public bool isSpectating() {
-            //Not having a live UI element means the user is in spectate mode.
-            return gameObject == null;
-        }
-        public int getId() { return id; }
-        public string getName() { return name;  }
-    }
     private void sendError(string msg) {
         lobbyMessageHandler.SendMessage(LobbyManagerListenerMethods.ERROR, msg, SendMessageOptions.RequireReceiver);
     }
@@ -284,5 +337,14 @@ public class LobbyManager : MonoBehaviour
         public const string JOIN_TEAM = "JoinTeam";
         public const string SPECTATE = "Spectate";
         public const string ERROR = "ErrorCallback";
+        public const string GET_PLAYERS = "GetPlayersList";
+        public const string START = "LobbyStart";
+        public const string QUIT = "LobbyQuit";
+        
+    }
+    class LobbyManagerTeamNames
+    {
+        public const string TEAM_A = "A";
+        public const string TEAM_B = "B";
     }
 }
