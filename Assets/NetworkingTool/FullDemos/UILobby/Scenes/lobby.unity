@@ -763,6 +763,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 678199595}
     m_Modifications:
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 224393325316707128, guid: d216ae29278902a43950b4025dd0ba72,
         type: 2}
       propertyPath: m_LocalPosition.x
@@ -1078,6 +1083,31 @@ Prefab:
         type: 2}
       propertyPath: maxSpectators
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 977883701}
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Spectate
+      objectReference: {fileID: 0}
+    - target: {fileID: 114194867054116578, guid: d216ae29278902a43950b4025dd0ba72,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d216ae29278902a43950b4025dd0ba72, type: 2}
