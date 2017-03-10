@@ -71,10 +71,11 @@ public class DebugLobbyManager : MonoBehaviour {
     public void GetPlayersList(List<LobbyPlayer> playersList)
     {
         Transform parent = playersContainer.transform;
-        while (parent.GetChildCount() > 0)
-        {
-            Destroy(parent.GetChild(0));
-        }
+        parent.DetachChildren(); //TODO: FIX THIS HACK, objects are send to the hierarchy.
+        //while (parent.GetChildCount() > 0)
+        //{
+        //    Destroy(parent.GetChild(0));
+        //}
         foreach (LobbyPlayer player in playersList)
         {
             GameObject newGO = Instantiate(lobbyPlayer, parent, false); //new GameObject("myTextGO");

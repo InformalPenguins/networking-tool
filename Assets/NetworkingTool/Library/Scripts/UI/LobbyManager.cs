@@ -66,7 +66,6 @@ public class LobbyManager : MonoBehaviour
 
     void Start()
     {
-        DontDestroyOnLoad(this.gameObject);
         if (lobbyMessageHandler == null) {
             throw new MissingComponentException("LobbyMessageHandler not found. This object will receive all messages coming from the LobbyManager.");
         }
