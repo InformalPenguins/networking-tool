@@ -16,8 +16,13 @@ public class PingPongInputManager : MonoBehaviour {
     // PC Update
 #if UNITY_STANDALONE
     void Update() {
-            //Windows|Mac OS
-            if (Input.GetKeyDown(KeyCode.W)){
+        if (ClientGameLogic.state != ClientGameLogic.PingPongState.RUNNING) {
+            //Ignore UP/DOWN input if NOT running.
+            return;
+        }
+
+        //Windows|Mac OS
+        if (Input.GetKeyDown(KeyCode.W)){
             sendCommand(PaddleController.PlayerCommand.UP);
         } else if(Input.GetKeyDown(KeyCode.S)){
             sendCommand(PaddleController.PlayerCommand.DOWN);
@@ -28,6 +33,10 @@ public class PingPongInputManager : MonoBehaviour {
     bool direction = false;
     // Mobile Update
     void Update() {
+        if (ClientGameLogic.state != PingPongState.RUNNING) {
+            //Ignore UP/DOWN input if NOT running.
+            return;
+        }
         //assume mobile
         if (Input.touches.Length > 0 && Input.touches[0].phase == TouchPhase.Ended)
         {

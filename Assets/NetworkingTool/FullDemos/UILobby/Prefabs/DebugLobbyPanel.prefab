@@ -1641,8 +1641,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114594933395060994}
   m_HandleRect: {fileID: 224171478412300124}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.99999994
+  m_Value: 0.5
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1763,7 +1763,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114412369870443272}
-        m_MethodName: SendAssign
+        m_MethodName: SendRemove
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

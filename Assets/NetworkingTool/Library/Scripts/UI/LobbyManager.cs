@@ -42,12 +42,13 @@ public class LobbyManager : MonoBehaviour
     // UI Variables
 
     public bool allowSpectators = true;
-    public int maxSpectators = 3;
+    //TODO: Implement
+    //public int maxSpectators = 3; 
     public int maxPlayersByTeam = 2;
     public int minimumPlayersByTeam = 1;
-
-    [Range(1, 2)]
-    public int teamsCount;
+    //TODO: Implement
+    //[Range(1, 2)]
+    // public int teamsCount;
 
     [Space(10)]
     [Header("Player prefabs")]
@@ -58,11 +59,14 @@ public class LobbyManager : MonoBehaviour
     public GameObject lobbyMessageHandler;
     // END UI Variables
 
+    //TODO: Implement
     //public Scene PlayScene;
-    public bool autoStart = false;
-    public int startTime = 5;
+    //public bool autoStart = false;
+    //public int startTime = 5;
 
-    void Start() {
+    void Start()
+    {
+        DontDestroyOnLoad(this.gameObject);
         if (lobbyMessageHandler == null) {
             throw new MissingComponentException("LobbyMessageHandler not found. This object will receive all messages coming from the LobbyManager.");
         }

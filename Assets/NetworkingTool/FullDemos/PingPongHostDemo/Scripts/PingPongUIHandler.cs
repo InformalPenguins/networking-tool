@@ -2,13 +2,13 @@
 using UnityEngine.UI;
 
 public class PingPongUIHandler : IUIHandler{
-    Text scoreText;
+    //Text scoreText;
     GameObject ball, player1, player2;
     BallController ballController;
     ClientGameLogic gameLogic;
 
     void Start(){
-        scoreText = GameObject.Find ("Canvas/Score").GetComponent<Text>();
+        //scoreText = GameObject.Find ("Canvas/Score").GetComponent<Text>();
         gameLogic = GetComponent<ClientGameLogic>();
         ball = GameObject.Find ("Ball");
         ballController = ball.GetComponent<BallController>();
@@ -20,7 +20,7 @@ public class PingPongUIHandler : IUIHandler{
         controller2.id = 1;
         gameLogic.setPlayerController1(controller1);
         gameLogic.setPlayerController2(controller2);
-        updateScoreText ();
+        //updateScoreText ();
     }
 
     public override void processMessage(string message) {
@@ -60,6 +60,7 @@ public class PingPongUIHandler : IUIHandler{
             sendInput(playerId, input);
         } else if (startAction == PingPongMessageHelper.ACTION_START)
         {
+            ClientGameLogic.state = ClientGameLogic.PingPongState.RUNNING;
             int horizontalForce = int.Parse(parameters[idx++]);
             int verticalForce = int.Parse(parameters[idx++]);
             ballController.Reset(horizontalForce, verticalForce);
@@ -94,10 +95,10 @@ public class PingPongUIHandler : IUIHandler{
         player.transform.position = position;
     }
 
-    public void updateScoreText(){
-        string scoreString = ClientGameLogic.score1 + " - " + ClientGameLogic.score2;
-        scoreText.text = scoreString;
-    }
+    //public void updateScoreText(){
+    //    string scoreString = ClientGameLogic.score1 + " - " + ClientGameLogic.score2;
+    //    scoreText.text = scoreString;
+    //}
     public void Update(){
         //Show score
     }

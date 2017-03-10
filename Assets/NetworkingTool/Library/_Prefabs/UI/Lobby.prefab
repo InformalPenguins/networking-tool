@@ -143,7 +143,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1148485229731800
 GameObject:
   m_ObjectHideFlags: 1
@@ -306,7 +306,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1358728791880774
 GameObject:
   m_ObjectHideFlags: 1
@@ -408,7 +408,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1455893855689538
 GameObject:
   m_ObjectHideFlags: 1
@@ -799,7 +799,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1968485686979148
 GameObject:
   m_ObjectHideFlags: 1
@@ -1270,7 +1270,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114169912014768304}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114196555239110318}
+        m_MethodName: Spectate
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114196555239110318
@@ -1284,10 +1295,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c8c03b3107b0da4abc3a33459d44053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPlayers: 2
-  maxSpectators: 3
-  minimumPlayers: 2
   allowSpectators: 1
+  maxSpectators: 1
+  maxPlayersByTeam: 2
+  minimumPlayersByTeam: 1
   teamsCount: 2
   player1LobbyPrefab: {fileID: 1153149616707298, guid: f9a185bd7f68bff41bde41827c5661fe,
     type: 2}
@@ -3341,7 +3352,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000040225685}
+  m_AnchoredPosition: {x: 0, y: -0.000030517578}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224728607378469840

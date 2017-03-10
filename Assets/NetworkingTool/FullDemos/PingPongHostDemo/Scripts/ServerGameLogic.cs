@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class ServerGameLogic : MonoBehaviour
 {
     private UDPServer udpServer;
-    private GameObject NetworkButtons, ServerUIText, ServerUI;
+    private GameObject NetworkButtons;
     public GameObject serverPrefab;
     private GameObject serverGameObject;
     private GameObject clientGameObject;
@@ -20,9 +20,6 @@ public class ServerGameLogic : MonoBehaviour
     void Start()
     {
         NetworkButtons = GameObject.Find("Canvas/NetworkButtons");
-        ServerUI = GameObject.Find("Canvas/ServerUI");
-        ServerUIText = GameObject.Find("Canvas/ServerUI/MessageText");
-        ServerUI.SetActive(false);
         clientGameObject = GameObject.Find("Client");
         udpClient = clientGameObject.GetComponent<UDPClient>();
         ball = GameObject.Find("Actors/Ball");
@@ -36,7 +33,6 @@ public class ServerGameLogic : MonoBehaviour
         udpServer = serverGameObject.GetComponent<UDPServer>();
         udpServer.init();
         setupClient(NetworkMessageHelper.LOCALHOST);
-        ServerUI.SetActive(true);
         isServer = notifyStart = true;
     }
     public void StartAsClient()
@@ -55,21 +51,34 @@ public class ServerGameLogic : MonoBehaviour
         udpClient.serverIP = serverIP;
         HideButtons();
         udpClient.init();
+
+        startLobby();
+
+        ClientGameLogic.state = ClientGameLogic.PingPongState.READY;
     }
+    public GameObject lobbyGameObject;
+    private void startLobby() {
+        lobbyGameObject.SetActive(true);
+    }
+
     public void HideButtons()
     {
         NetworkButtons.SetActive(false);
     }
-    float delayUpdate = .2f, nextUpdateSeconds = 0;
+
+    float broadCastBallDelay = .2f, nextUpdateSeconds = 0;
+
     private void broadCastBall() {
         Vector3 position = ball.transform.position;
         Vector3 velocity = ball.GetComponent<Rigidbody>().velocity;
         //Adjusts position and velocity of the ball
         udpServer.broadCast(PingPongMessageHelper.BuildMessage(PingPongMessageHelper.ACTION_UPDATE_POSITION, PingPongMessageHelper.TYPE_BALL, position.x, position.y, position.z, velocity.x, velocity.y, velocity.z));
     }
+
     private void broadCastPaddles() {
 
     }
+
     void Update()
     {
         if (!isServer) {
@@ -78,7 +87,7 @@ public class ServerGameLogic : MonoBehaviour
         nextUpdateSeconds -= Time.deltaTime;
         if (nextUpdateSeconds <= 0)
         {
-            nextUpdateSeconds = delayUpdate;
+            nextUpdateSeconds = broadCastBallDelay;
             broadCastBall();
             broadCastPaddles();
         }
@@ -99,11 +108,6 @@ public class ServerGameLogic : MonoBehaviour
             throw new Exception("MainThreadProcessor could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene.");
         }
         return _instance;
-    }
-
-    public void debugBroadCast() {
-        string msg = ServerUIText.GetComponent<InputField>().text;
-        udpServer.broadCast(msg);
     }
 
     public static bool Exists()
@@ -139,4 +143,5 @@ public class ServerGameLogic : MonoBehaviour
             Debug.Log("Errror closing server connection. \r" + e.StackTrace);
         }
     }
+    public UDPServer getUdpServer() { return udpServer;  }
 }

@@ -53,3 +53,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverPrefab: {fileID: 1944541306998392, guid: 6537e352d07ba3347aae0884502215aa,
     type: 2}
+  lobbyGameObject: {fileID: 0}

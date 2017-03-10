@@ -23,4 +23,11 @@ public class ClientGameLogic : MonoBehaviour {
         }
         return null;
     }
+    public static PingPongState state = PingPongState.READY;
+    public enum PingPongState {
+        READY, // Game is paused, regular inputs must NOT respond, inputs to start the game should.
+        RUNNING, // Game is running, inputs must respond
+        PAUSED, // Game is paused, regular inputs must NOT respond, you must just accept input to either quit or resume.
+        GAME_OVER,   // Game is finishing, will jump into READY soon.
+    };
 }
